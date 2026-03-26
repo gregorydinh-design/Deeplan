@@ -657,11 +657,11 @@
         <label>Gradient Factor (GF Lo / GF Hi)</label>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
           <div class="input-unit">
-            <input type="number" id="gf_lo" value="30" min="10" max="100">
+            <input type="number" id="gf_lo" value="85" min="10" max="100">
             <span class="unit-label">%</span>
           </div>
           <div class="input-unit">
-            <input type="number" id="gf_hi" value="80" min="10" max="100">
+            <input type="number" id="gf_hi" value="85" min="10" max="100">
             <span class="unit-label">%</span>
           </div>
         </div>
@@ -1450,16 +1450,26 @@ const FIELDS = ['depth','sac','fo2_fond','fo2_deco','vol_fond','pression_fond',
                  'vol_deco','pression_deco','gas_rule','ascent_rate','gf_lo','gf_hi','algo'];
 
 function savePlan() {
-  const data = {};
-  FIELDS.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) data[id] = el.value;
-  });
-  data._saved = new Date().toLocaleString('fr-FR');
-  localStorage.setItem('deepplan_params', JSON.stringify(data));
-  const st = document.getElementById('save-status');
-  st.textContent = '✓ Sauvegardé — ' + data._saved;
-  setTimeout(() => { st.textContent = ''; }, 3000);
+  try {
+    const data = {};
+    FIELDS.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) data[id] = el.value;
+    });
+    data._saved = new Date().toLocaleString('fr-FR');
+    localStorage.setItem('deepplan_params', JSON.stringify(data));
+    // Verify it was actually saved
+    const check = localStorage.getItem('deepplan_params');
+    if (!check) throw new Error('localStorage indisponible');
+    const st = document.getElementById('save-status');
+    st.style.color = 'var(--accent2)';
+    st.textContent = '✓ Sauvegardé ' + data._saved;
+    setTimeout(() => { st.textContent = ''; st.style.color = ''; }, 5000);
+  } catch(e) {
+    const st = document.getElementById('save-status');
+    st.style.color = 'var(--danger)';
+    st.textContent = '✗ Erreur: ' + e.message;
+  }
 }
 
 function loadPlan() {
